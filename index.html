@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="GymControl — Sistema de controle de alunas offline">
+
+  <!-- PWA Meta tags para iPhone -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="GymControl">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#6c63ff">
+
+  <title>GymControl</title>
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Ícones iOS -->
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png">
+
+  <!-- Fonte Inter via Google Fonts — cacheada pelo SW -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Bibliotecas JS (CDN — cacheadas pelo SW para offline) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+<!-- ── Flash container (global) ── -->
+<div id="flash-container" class="flash-container"></div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar" id="navbar" style="display:none">
+  <div class="nav-brand">
+    <span class="nav-icon">🏋️</span>
+    <span>GymControl</span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link" data-page="dashboard" onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-link" data-page="alunas" onclick="showPage('alunas')">👩 Alunas</button>
+    <button class="nav-link" data-page="nova-aluna" onclick="showPage('nova-aluna')">➕ Nova Aluna</button>
+    <button class="nav-link" data-page="relatorio" onclick="showPage('relatorio')">📅 Relatório</button>
+    <button class="nav-link" onclick="acaoBackupZip()">💾 Backup</button>
+    <button class="nav-link" data-page="restaurar" onclick="showPage('restaurar')">🔄 Restaurar</button>
+    <button class="nav-link logout" onclick="doLogout()">🚪 Sair</button>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <!-- ══════════════════════════════════════
+       PAGE: LOGIN
+  ══════════════════════════════════════ -->
+  <div id="page-login" class="page">
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-logo">🏋️</div>
+          <h1>GymControl</h1>
+          <p>Sistema de controle de alunas</p>
+        </div>
+        <form class="login-form" onsubmit="submitLogin(event)">
+          <div class="form-group">
+            <label for="login-user">Usuário</label>
+            <input type="text" id="login-user" placeholder="admin" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="login-pass">Senha</label>
+            <input type="password" id="login-pass" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+        </form>
+        <p class="login-hint">🔒 Funciona 100% offline — dados salvos no dispositivo</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PAGE: DASHBOARD
+  ══════════════════════════════════════ -->
+  <div id="page-dashboard" class="page">
+    <div id="dashboard-content">
+      <!-- Renderizado dinamicamente pelo app.js -->
+      <div class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="page-subtitle" id="dashboard-subtitle">Carregando...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PAGE: ALUNAS
+  ══════════════════════════════════════ -->
+  <div id="page-alunas" class="page">
+    <div class="page-header">
+      <div>
+        <h1>Alunas Cadastradas</h1>
+        <p class="page-subtitle" id="alunas-count"></p>
+      </div>
+      <button class="btn btn-primary" onclick="showPage('nova-aluna')">➕ Nova Aluna</button>
+    </div>
+    <div id="alunas-content">
+      <!-- Renderizado dinamicamente -->
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PAGE: NOVA / EDITAR ALUNA
+  ══════════════════════════════════════ -->
+  <div id="page-nova-aluna" class="page">
+    <div class="page-header">
+      <div>
+        <h1 id="form-aluna-title">Nova Aluna</h1>
+        <p class="page-subtitle" id="form-aluna-subtitle">Preencha os dados da nova aluna</p>
+      </div>
+      <button class="btn btn-outline" onclick="showPage('alunas')">← Voltar</button>
+    </div>
+    <div id="form-aluna-content">
+      <!-- Renderizado dinamicamente -->
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PAGE: RELATÓRIO
+  ══════════════════════════════════════ -->
+  <div id="page-relatorio" class="page">
+    <div class="page-header">
+      <div>
+        <h1>📅 Relatório Mensal</h1>
+        <p class="page-subtitle">Alunas organizadas por mês de matrícula</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="acaoExportarExcel()">📊 Exportar Excel</button>
+        <button class="btn btn-outline" onclick="acaoBackupZip()">💾 Exportar ZIP</button>
+      </div>
+    </div>
+    <div id="relatorio-content">
+      <!-- Renderizado dinamicamente -->
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PAGE: RESTAURAR
+  ══════════════════════════════════════ -->
+  <div id="page-restaurar" class="page">
+    <div class="page-header">
+      <div>
+        <h1>🔄 Restaurar Banco de Dados</h1>
+        <p class="page-subtitle">Importe um backup JSON para restaurar os dados</p>
+      </div>
+      <button class="btn btn-outline" onclick="showPage('dashboard')">← Voltar</button>
+    </div>
+
+    <div class="card" style="max-width: 640px;">
+      <div class="alert-info-box">
+        <h4>⚠️ Atenção antes de restaurar</h4>
+        <ol class="info-list numbered">
+          <li>O arquivo deve ser um backup <code>.json</code> gerado pelo GymControl.</li>
+          <li>Todos os dados atuais serão <strong>substituídos</strong> pelos dados do backup.</li>
+          <li>Esta ação <strong>não pode ser desfeita</strong>. Faça um backup antes!</li>
+        </ol>
+      </div>
+
+      <form onsubmit="submitRestaurar(event)">
+        <div class="form-group">
+          <label for="arquivo-restaurar">Selecionar arquivo de backup (.json)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="arquivo-restaurar" accept=".json"
+              onchange="acaoRestaurarJSON(this)">
+          </div>
+          <div id="file-preview" class="file-preview"></div>
+        </div>
+
+        <div class="restaurar-acoes">
+          <button type="submit" class="btn btn-primary">🔄 Restaurar Banco</button>
+          <button type="button" class="btn btn-outline" onclick="showPage('dashboard')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Exportações -->
+    <div class="card" style="max-width: 640px;">
+      <h3>📤 Exportar / Fazer Backup</h3>
+      <p class="card-desc">Salve seus dados antes de restaurar ou para transferir entre dispositivos.</p>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn btn-green" onclick="acaoBackupZip()">💾 Baixar ZIP (JSON + Excel)</button>
+        <button class="btn btn-blue" onclick="acaoExportarExcel()">📊 Baixar Excel</button>
+        <button class="btn btn-outline" onclick="acaoExportarJSON()">📄 Baixar JSON</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Scripts modulares ── -->
+<script src="js/database.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/alunas.js"></script>
+<script src="js/relatorios.js"></script>
+<script src="js/backup.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
