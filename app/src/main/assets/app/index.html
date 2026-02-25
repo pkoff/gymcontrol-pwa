@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GymControl</title>
+<style>
+/* ─────────────────────────────────────────────
+   GymControl — Stylesheet Android WebView
+   ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --primary:    #6c63ff;
+    --primary-dk: #574fd6;
+    --green:      #22c55e;
+    --green-lt:   #dcfce7;
+    --red:        #ef4444;
+    --red-lt:     #fee2e2;
+    --blue:       #3b82f6;
+    --blue-lt:    #dbeafe;
+    --orange:     #f97316;
+    --orange-lt:  #ffedd5;
+    --yellow:     #eab308;
+    --yellow-lt:  #fef9c3;
+    --bg:         #f5f5f7;
+    --card:       #ffffff;
+    --text:       #1a1a2e;
+    --muted:      #6b7280;
+    --border:     #e5e7eb;
+    --nav-h:      56px;
+    --radius:     12px;
+    --shadow:     0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.08);
+}
+body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* NAVBAR */
+.navbar { position:sticky;top:0;z-index:100;height:var(--nav-h);background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1rem;box-shadow:0 1px 8px rgba(0,0,0,.06); }
+.nav-brand { display:flex;align-items:center;gap:.4rem;font-size:1.1rem;font-weight:700;color:var(--primary); }
+.nav-links { display:flex;align-items:center;gap:.15rem;flex-wrap:wrap; }
+.nav-link { text-decoration:none;color:var(--muted);padding:.4rem .7rem;border-radius:8px;font-size:.8rem;font-weight:500;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent; }
+.nav-link:hover,.nav-link.active { background:#ede9fe;color:var(--primary); }
+.nav-link.logout:hover { background:var(--red-lt);color:var(--red); }
+
+/* MAIN */
+.main-content { max-width:1200px;margin:0 auto;padding:1.5rem 1rem; }
+
+/* FLASH */
+.flash-container { margin-bottom:1rem;display:flex;flex-direction:column;gap:.4rem; }
+.flash { padding:.75rem 1rem;border-radius:var(--radius);font-size:.875rem;font-weight:500;transition:opacity .4s; }
+.flash-success { background:var(--green-lt);color:#15803d;border:1px solid #bbf7d0; }
+.flash-danger  { background:var(--red-lt);color:#b91c1c;border:1px solid #fca5a5; }
+.flash-info    { background:var(--blue-lt);color:#1d4ed8;border:1px solid #93c5fd; }
+.flash-warning { background:var(--orange-lt);color:#c2410c;border:1px solid #fdba74; }
+
+/* PAGE HEADER */
+.page-header { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap; }
+.page-header h1 { font-size:1.5rem;font-weight:700; }
+.page-subtitle { color:var(--muted);margin-top:.2rem;font-size:.85rem; }
+
+/* CARD */
+.card { background:var(--card);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:1.25rem; }
+.card h3 { font-size:.95rem;font-weight:600;margin-bottom:.5rem; }
+.card-desc { color:var(--muted);font-size:.85rem;margin-bottom:.75rem; }
+.alert-card { border-left:4px solid var(--border); }
+.alert-card-blue  { border-left-color:var(--blue); }
+.alert-card-red   { border-left-color:var(--red); }
+.alert-card-green { border-left-color:var(--green); }
+
+/* STATS */
+.stats-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem;margin-bottom:1.25rem; }
+.stat-card { background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;align-items:center;gap:.75rem;box-shadow:var(--shadow); }
+.stat-card.stat-green { border-left:4px solid var(--green); }
+.stat-card.stat-red   { border-left:4px solid var(--red); }
+.stat-card.stat-blue  { border-left:4px solid var(--blue); }
+.stat-card.stat-orange{ border-left:4px solid var(--orange); }
+.stat-icon { font-size:1.75rem; }
+.stat-value { font-size:1.25rem;font-weight:700;line-height:1; }
+.stat-label { font-size:.75rem;color:var(--muted);margin-top:.2rem; }
+
+/* PROGRESS */
+.progress-bar-container { background:var(--bg);border-radius:99px;height:14px;overflow:hidden;margin:.5rem 0; }
+.progress-bar { height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#16a34a);transition:width .5s; }
+.progress-label { font-size:.8rem;color:var(--muted); }
+
+/* QUICK ACTIONS */
+.quick-links { display:flex;gap:.6rem;flex-wrap:wrap; }
+.quick-link { display:flex;align-items:center;gap:.35rem;text-decoration:none;color:var(--text);background:var(--bg);padding:.6rem .9rem;border-radius:8px;font-size:.85rem;font-weight:500;border:1px solid var(--border);transition:background .15s;cursor:pointer; }
+.quick-link:hover { background:#ede9fe;border-color:var(--primary);color:var(--primary); }
+
+/* TABLE */
+.table-card { padding:0;overflow:hidden; }
+.search-bar { padding:1rem 1.25rem;border-bottom:1px solid var(--border); }
+.search-bar input { width:100%;max-width:320px;padding:.55rem .9rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:.875rem;outline:none; }
+.search-bar input:focus { border-color:var(--primary); }
+.table-responsive { overflow-x:auto; }
+.table { width:100%;border-collapse:collapse; }
+.table th { background:var(--bg);padding:.75rem 1rem;text-align:left;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:1px solid var(--border); }
+.table td { padding:.8rem 1rem;border-bottom:1px solid var(--border);font-size:.875rem;vertical-align:middle; }
+.table tbody tr:last-child td { border-bottom:none; }
+.table tbody tr:hover { background:#fafafa; }
+
+/* BADGES */
+.badge { display:inline-flex;align-items:center;padding:.25rem .65rem;border-radius:99px;font-size:.75rem;font-weight:600; }
+.badge-green  { background:var(--green-lt);color:#15803d; }
+.badge-red    { background:var(--red-lt);color:#b91c1c; }
+.badge-blue   { background:var(--blue-lt);color:#1d4ed8; }
+.badge-orange { background:var(--orange-lt);color:#c2410c; }
+
+/* BUTTONS */
+.btn { display:inline-flex;align-items:center;gap:.3rem;padding:.5rem 1rem;border-radius:8px;font-size:.875rem;font-weight:500;cursor:pointer;border:none;text-decoration:none;transition:background .15s,transform .1s;white-space:nowrap;font-family:inherit; }
+.btn:hover { transform:translateY(-1px); }
+.btn-primary { background:var(--primary);color:#fff; }
+.btn-primary:hover { background:var(--primary-dk); }
+.btn-outline { background:transparent;color:var(--text);border:1px solid var(--border); }
+.btn-outline:hover { background:var(--bg); }
+.btn-full { width:100%;justify-content:center; }
+.btn-sm { padding:.3rem .65rem;font-size:.78rem; }
+.btn-green  { background:var(--green-lt);color:#15803d; }
+.btn-red    { background:var(--red-lt);color:#b91c1c; }
+.btn-blue   { background:var(--blue-lt);color:#1d4ed8; }
+.btn-orange { background:var(--orange-lt);color:#c2410c; }
+.actions { display:flex;gap:.4rem;align-items:center;flex-wrap:wrap; }
+
+/* EMPTY STATE */
+.empty-state { text-align:center;padding:3rem 1.5rem; }
+.empty-icon { font-size:3rem;margin-bottom:.75rem; }
+.empty-state h3 { font-size:1.1rem;margin-bottom:.4rem; }
+.empty-state p { color:var(--muted);margin-bottom:1.25rem; }
+
+/* FORM */
+.form-card { max-width:680px; }
+.form-grid { display:grid;grid-template-columns:1fr 1fr;gap:.9rem; }
+.form-group { display:flex;flex-direction:column;gap:.35rem; }
+.form-group label { font-size:.85rem;font-weight:500; }
+.form-group input,.select-input { padding:.6rem .85rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:.875rem;outline:none;width:100%;font-family:inherit; }
+.form-group input:focus,.select-input:focus { border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,99,255,.12); }
+.form-actions { display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border); }
+.filtro-row { display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem; }
+
+/* LOADING */
+.loading { text-align:center;padding:3rem;color:var(--muted); }
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .form-grid { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .page-header { flex-direction:column; }
+  .form-actions { flex-direction:column; }
+  .nav-link { padding:.35rem .5rem;font-size:.75rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-brand"><span>🏋️</span> GymControl</div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="navigate('dashboard')">📊 Dashboard</button>
+    <button class="nav-link" onclick="navigate('alunas')">👩 Alunas</button>
+    <button class="nav-link" onclick="navigate('novaAluna', {id:0})">➕ Nova</button>
+    <button class="nav-link" onclick="navigate('relatorio')">📅 Relatório</button>
+    <button class="nav-link" onclick="navigate('backup')">💾 Backup</button>
+    <button class="nav-link logout" onclick="doLogout()">🚪 Sair</button>
+  </div>
+</nav>
+
+<!-- FLASH -->
+<div class="main-content" id="app">
+  <div class="flash-container" id="flashContainer"></div>
+  <div id="pageContent"><div class="loading">⏳ Carregando...</div></div>
+</div>
+
+<script>
+// ─── AndroidCallback Bridge ───────────────────────────────────────────────────
+window.AndroidCallback = {
+  listeners: {},
+  onResult(method, data) {
+    const cb = this.listeners[method];
+    if (cb) { delete this.listeners[method]; cb(data); }
+  },
+  once(method, cb) { this.listeners[method] = cb; }
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const pageContent = $('pageContent');
+const flashContainer = $('flashContainer');
+
+function flash(msg, type='info') {
+  const d = document.createElement('div');
+  d.className = `flash flash-${type}`;
+  d.textContent = msg;
+  flashContainer.appendChild(d);
+  setTimeout(() => { d.style.opacity='0'; setTimeout(()=>d.remove(),400); }, 4000);
+}
+
+function formatBRL(v) { return 'R$ ' + Number(v).toFixed(2).replace('.',','); }
+
+function setActiveNav(page) {
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  const map = {dashboard:0,alunas:1,novaAluna:2,relatorio:3,backup:4};
+  const idx = map[page];
+  if(idx!=null) document.querySelectorAll('.nav-link')[idx].classList.add('active');
+}
+
+// ─── Router ───────────────────────────────────────────────────────────────────
+function navigate(page, params={}) {
+  setActiveNav(page);
+  switch(page) {
+    case 'dashboard': renderDashboard(); break;
+    case 'alunas':    renderAlunas(); break;
+    case 'novaAluna': renderFormAluna(params.id || 0); break;
+    case 'relatorio': renderRelatorio(params.mes || ''); break;
+    case 'backup':    renderBackup(); break;
+    default: renderDashboard();
+  }
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  pageContent.innerHTML = '<div class="loading">⏳ Carregando dashboard...</div>';
+  AndroidCallback.once('getDashboard', data => {
+    if (data.error) { flash(data.error, 'danger'); return; }
+    const pct = data.totalEsperado > 0 ? ((data.totalRecebido / data.totalEsperado)*100).toFixed(1) : 0;
+
+    let periodo30HTML = '';
+    if (data.emPeriodo30 && data.emPeriodo30.length) {
+      periodo30HTML = `
+      <div class="card alert-card alert-card-blue">
+        <h3>🕐 Dentro do Período de 30 dias (${data.emPeriodo30.length})</h3>
+        <p class="card-desc">Alunas no período inicial — ainda não precisam pagar.</p>
+        <div class="table-responsive">
+          <table class="table">
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Matrícula</th><th>Valor</th><th>Dias Restantes</th></tr></thead>
+            <tbody>
+              ${data.emPeriodo30.map(a=>`
+              <tr>
+                <td><strong>${a.nome}</strong></td>
+                <td>${a.telefone||'—'}</td>
+                <td>${a.dataMatriculaFmt}</td>
+                <td>${formatBRL(a.valorMensalidade)}</td>
+                <td><span class="badge badge-blue">${a.diasRestantes} dias</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    let inadimpHTML = '';
+    if (data.inadimplentes && data.inadimplentes.length) {
+      inadimpHTML = `
+      <div class="card alert-card alert-card-red">
+        <h3>🔴 Alunas Inadimplentes (${data.inadimplentes.length})</h3>
+        <p class="card-desc">Pagamentos em atraso — requer atenção.</p>
+        <div class="table-responsive">
+          <table class="table">
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Vencimento</th><th>Valor</th><th>Dias em Atraso</th><th>Ação</th></tr></thead>
+            <tbody>
+              ${data.inadimplentes.map(a=>`
+              <tr>
+                <td><strong>${a.nome}</strong></td>
+                <td>${a.telefone||'—'}</td>
+                <td>${a.dataVencimentoFmt}</td>
+                <td>${formatBRL(a.valorMensalidade)}</td>
+                <td><span class="badge badge-red">${a.diasAtraso} dias</span></td>
+                <td><button class="btn btn-sm btn-green" onclick="registrarPago(${a.id})">💰 Pago</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    let semAlertas = '';
+    if(!data.inadimplentes?.length && !data.emPeriodo30?.length) {
+      semAlertas = `<div class="card alert-card alert-card-green"><h3>✅ Tudo em dia!</h3><p class="card-desc">Nenhuma aluna inadimplente.</p></div>`;
+    }
+
+    pageContent.innerHTML = `
+    <div class="page-header">
+      <div><h1>Dashboard</h1><p class="page-subtitle">Resumo de ${data.mesLabel}</p></div>
+      <button class="btn btn-primary" onclick="navigate('novaAluna',{id:0})">➕ Nova Aluna</button>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">👩‍🎓</div><div><div class="stat-value">${data.totalAlunas}</div><div class="stat-label">Total de Alunas</div></div></div>
+      <div class="stat-card stat-green"><div class="stat-icon">✅</div><div><div class="stat-value">${data.pagasMes}</div><div class="stat-label">Pagaram este mês</div></div></div>
+      <div class="stat-card stat-red"><div class="stat-icon">⏳</div><div><div class="stat-value">${data.pendentes}</div><div class="stat-label">Pendentes</div></div></div>
+      <div class="stat-card stat-blue"><div class="stat-icon">💰</div><div><div class="stat-value">${formatBRL(data.totalRecebido)}</div><div class="stat-label">Recebido no mês</div></div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div><div class="stat-value">${formatBRL(data.totalEsperado)}</div><div class="stat-label">Total esperado</div></div></div>
+      <div class="stat-card stat-orange"><div class="stat-icon">🔴</div><div><div class="stat-value">${formatBRL(data.valorAberto)}</div><div class="stat-label">Em aberto</div></div></div>
+    </div>
+    ${data.totalEsperado > 0 ? `
+    <div class="progress-section card">
+      <h3>Progresso de Arrecadação — ${data.mesLabel}</h3>
+      <div class="progress-bar-container"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <p class="progress-label">${pct}% arrecadado (${formatBRL(data.totalRecebido)} de ${formatBRL(data.totalEsperado)})</p>
+    </div>` : ''}
+    ${periodo30HTML}
+    ${inadimpHTML}
+    ${semAlertas}
+    <div class="card">
+      <h3>Ações Rápidas</h3>
+      <div class="quick-links">
+        <button class="quick-link" onclick="navigate('alunas')"><span>👩</span> Ver todas as alunas</button>
+        <button class="quick-link" onclick="navigate('novaAluna',{id:0})"><span>➕</span> Cadastrar nova aluna</button>
+        <button class="quick-link" onclick="navigate('relatorio')"><span>📅</span> Relatório mensal</button>
+        <button class="quick-link" onclick="navigate('backup')"><span>💾</span> Backup ZIP</button>
+      </div>
+    </div>`;
+  });
+  Android.getDashboard();
+}
+
+// ─── ALUNAS ───────────────────────────────────────────────────────────────────
+function renderAlunas() {
+  pageContent.innerHTML = '<div class="loading">⏳ Carregando alunas...</div>';
+  AndroidCallback.once('getAlunas', alunas => {
+    if (!alunas || alunas.error) { flash('Erro ao carregar alunas','danger'); return; }
+
+    const badgeStatus = sr => {
+      if(sr==='pago')       return '<span class="badge badge-green">✅ Pago</span>';
+      if(sr==='periodo_30') return '<span class="badge badge-blue">🕐 Período 30d</span>';
+      if(sr==='atrasado')   return '<span class="badge badge-red">🔴 Atrasado</span>';
+      return '<span class="badge badge-orange">⏳ Pendente</span>';
+    };
+
+    const tbody = alunas.map(a => `
+      <tr>
+        <td><strong>${a.nome}</strong></td>
+        <td>${a.telefone||'—'}</td>
+        <td>${a.dataMatriculaFmt}</td>
+        <td>${a.dataVencimentoFmt}</td>
+        <td>${formatBRL(a.valorMensalidade)}</td>
+        <td>${badgeStatus(a.statusReal)}</td>
+        <td>${a.dataPagamentoFmt}</td>
+        <td class="actions">
+          ${a.statusPagamento==='pendente'
+            ? `<button class="btn btn-sm btn-green" onclick="registrarPago(${a.id})">💰 Pago</button>`
+            : `<button class="btn btn-sm btn-orange" onclick="reverterPendente(${a.id})">↩ Reverter</button>`}
+          <button class="btn btn-sm btn-blue" onclick="navigate('novaAluna',{id:${a.id}})">✏️ Editar</button>
+          <button class="btn btn-sm btn-red" onclick="confirmarExclusao(${a.id},'${a.nome.replace(/'/g,"\\'")}')">🗑 Excluir</button>
+        </td>
+      </tr>`).join('');
+
+    pageContent.innerHTML = `
+    <div class="page-header">
+      <div><h1>Alunas Cadastradas</h1><p class="page-subtitle">${alunas.length} aluna(s)</p></div>
+      <button class="btn btn-primary" onclick="navigate('novaAluna',{id:0})">➕ Nova Aluna</button>
+    </div>
+    ${alunas.length === 0 ? `
+    <div class="card empty-state">
+      <div class="empty-icon">👩‍🎓</div>
+      <h3>Nenhuma aluna cadastrada</h3>
+      <p>Comece cadastrando sua primeira aluna!</p>
+      <button class="btn btn-primary" onclick="navigate('novaAluna',{id:0})">➕ Cadastrar Aluna</button>
+    </div>` : `
+    <div class="card table-card">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar aluna..." oninput="filtrarTabela()">
+      </div>
+      <div class="table-responsive">
+        <table class="table" id="tabelaAlunas">
+          <thead><tr><th>Nome</th><th>Telefone</th><th>Matrícula</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Pago em</th><th>Ações</th></tr></thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>
+    </div>`}`;
+  });
+  Android.getAlunas();
+}
+
+function filtrarTabela() {
+  const val = $('searchInput')?.value.toLowerCase() || '';
+  document.querySelectorAll('#tabelaAlunas tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(val) ? '' : 'none';
+  });
+}
+
+function registrarPago(id) {
+  AndroidCallback.once('marcarPago', d => {
+    flash('💰 Pagamento registrado!','success');
+    renderAlunas();
+  });
+  Android.marcarPago(id);
+}
+
+function reverterPendente(id) {
+  AndroidCallback.once('marcarPendente', d => {
+    flash('Status revertido para pendente.','warning');
+    renderAlunas();
+  });
+  Android.marcarPendente(id);
+}
+
+function confirmarExclusao(id, nome) {
+  if (confirm(`⚠️ Excluir a aluna "${nome}"?\n\nEsta ação não pode ser desfeita.`)) {
+    AndroidCallback.once('excluirAluna', d => {
+      flash(`Aluna ${nome} excluída.`,'info');
+      renderAlunas();
+    });
+    Android.excluirAluna(id);
+  }
+}
+
+// ─── FORMULÁRIO ALUNA ─────────────────────────────────────────────────────────
+function renderFormAluna(id) {
+  const hoje = new Date().toISOString().split('T')[0];
+  if (id === 0) {
+    buildFormAluna(null, hoje);
+  } else {
+    pageContent.innerHTML = '<div class="loading">⏳ Carregando...</div>';
+    AndroidCallback.once('getAluna', data => {
+      if (data.error) { flash(data.error,'danger'); navigate('alunas'); return; }
+      buildFormAluna(data, hoje);
+    });
+    Android.getAluna(id);
+  }
+}
+
+function buildFormAluna(aluna, hoje) {
+  const editando = aluna && aluna.id > 0;
+  pageContent.innerHTML = `
+  <div class="page-header">
+    <div><h1>${editando?'Editar Aluna':'Nova Aluna'}</h1></div>
+    <button class="btn btn-outline" onclick="navigate('alunas')">← Voltar</button>
+  </div>
+  <div class="card form-card">
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Nome completo *</label>
+        <input type="text" id="fNome" value="${aluna?.nome||''}" placeholder="Nome da aluna" required>
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="tel" id="fTelefone" value="${aluna?.telefone||''}" placeholder="(11) 99999-9999">
+      </div>
+      <div class="form-group">
+        <label>Valor da Mensalidade (R$) *</label>
+        <input type="number" id="fValor" value="${aluna?.valorMensalidade||''}" step="0.01" min="0" placeholder="80.00" required>
+      </div>
+      <div class="form-group">
+        <label>Data de Matrícula *</label>
+        <input type="date" id="fMatricula" value="${aluna?.dataMatricula||hoje}" required>
+      </div>
+      <div class="form-group">
+        <label>Data de Vencimento *</label>
+        <input type="date" id="fVencimento" value="${aluna?.dataVencimento||''}" required>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="navigate('alunas')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAluna(${aluna?.id||0})">${editando?'💾 Salvar Alterações':'✅ Cadastrar Aluna'}</button>
+    </div>
+  </div>`;
+}
+
+function salvarAluna(id) {
+  const nome = $('fNome')?.value.trim();
+  const telefone = $('fTelefone')?.value.trim();
+  const valor = parseFloat($('fValor')?.value);
+  const matricula = $('fMatricula')?.value;
+  const vencimento = $('fVencimento')?.value;
+
+  if (!nome || !vencimento || isNaN(valor)) {
+    flash('Preencha todos os campos obrigatórios.','danger');
+    return;
+  }
+
+  const json = JSON.stringify({id, nome, telefone, valorMensalidade:valor, dataMatricula:matricula, dataVencimento:vencimento});
+
+  AndroidCallback.once('salvarAluna', d => {
+    if (d.error) { flash(d.error,'danger'); return; }
+    flash(`Aluna ${nome} ${d.acao}! ✅`,'success');
+    navigate('alunas');
+  });
+  Android.salvarAluna(json);
+}
+
+// ─── RELATÓRIO ────────────────────────────────────────────────────────────────
+function renderRelatorio(mesSelecionado) {
+  pageContent.innerHTML = '<div class="loading">⏳ Carregando...</div>';
+  AndroidCallback.once('getMeses', meses => {
+    if (!meses || meses.error) { flash('Erro ao buscar meses','danger'); return; }
+    const mes = mesSelecionado || (meses[0]||'');
+
+    if (!mes) {
+      pageContent.innerHTML = `
+      <div class="page-header"><div><h1>Relatório Mensal</h1></div></div>
+      <div class="card empty-state"><div class="empty-icon">📅</div><h3>Nenhuma matrícula registrada</h3></div>`;
+      return;
+    }
+
+    const optionsMes = meses.map(m => {
+      const d = new Date(m+'-02');
+      const label = d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+      return `<option value="${m}" ${m===mes?'selected':''}>${label}</option>`;
+    }).join('');
+
+    AndroidCallback.once('getRelatorio', rel => {
+      if (rel.error) { flash(rel.error,'danger'); return; }
+
+      const badgeStatus = sr => {
+        if(sr==='pago')       return '<span class="badge badge-green">✅ Pago</span>';
+        if(sr==='periodo_30') return '<span class="badge badge-blue">🕐 Período 30d</span>';
+        if(sr==='atrasado')   return '<span class="badge badge-red">🔴 Atrasado</span>';
+        return '<span class="badge badge-orange">⏳ Pendente</span>';
+      };
+
+      const tbody = rel.alunas.map(a => `
+        <tr>
+          <td><strong>${a.nome}</strong></td>
+          <td>${a.telefone||'—'}</td>
+          <td>${a.dataMatriculaFmt}</td>
+          <td>${a.dataVencimentoFmt}</td>
+          <td>${formatBRL(a.valorMensalidade)}</td>
+          <td>${badgeStatus(a.statusReal)}</td>
+          <td>${a.dataPagamentoFmt}</td>
+        </tr>`).join('');
+
+      pageContent.innerHTML = `
+      <div class="page-header"><div><h1>Relatório Mensal</h1><p class="page-subtitle">${rel.mesLabel}</p></div></div>
+      <div class="filtro-row">
+        <select class="select-input" onchange="navigate('relatorio',{mes:this.value})">${optionsMes}</select>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">👩‍🎓</div><div><div class="stat-value">${rel.totalAlunas}</div><div class="stat-label">Matrículas no mês</div></div></div>
+        <div class="stat-card stat-green"><div class="stat-icon">✅</div><div><div class="stat-value">${rel.pagas}</div><div class="stat-label">Pagas</div></div></div>
+        <div class="stat-card stat-red"><div class="stat-icon">🔴</div><div><div class="stat-value">${rel.atrasadas}</div><div class="stat-label">Atrasadas</div></div></div>
+        <div class="stat-card stat-blue"><div class="stat-icon">🕐</div><div><div class="stat-value">${rel.periodo30}</div><div class="stat-label">Período 30d</div></div></div>
+        <div class="stat-card stat-blue"><div class="stat-icon">💰</div><div><div class="stat-value">${formatBRL(rel.valorArrecadado)}</div><div class="stat-label">Arrecadado</div></div></div>
+      </div>
+      ${rel.alunas.length > 0 ? `
+      <div class="card table-card">
+        <div class="table-responsive">
+          <table class="table">
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Matrícula</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Pago em</th></tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>
+      </div>` : '<div class="card empty-state"><div class="empty-icon">📋</div><h3>Sem alunas neste mês</h3></div>'}`;
+    });
+    Android.getRelatorio(mes);
+  });
+  Android.getMeses();
+}
+
+// ─── BACKUP ───────────────────────────────────────────────────────────────────
+function renderBackup() {
+  pageContent.innerHTML = `
+  <div class="page-header"><div><h1>Backup & Restauração</h1></div></div>
+  <div class="card">
+    <h3>💾 Gerar Backup</h3>
+    <p class="card-desc">Gera um arquivo .zip com o banco de dados SQLite e planilha Excel (.xlsx) com relatório mensal completo. Salvo na pasta Downloads.</p>
+    <button class="btn btn-primary" onclick="fazerBackup()">⬇️ Baixar Backup ZIP</button>
+  </div>
+  <div class="card">
+    <h3>🔄 Restaurar Banco</h3>
+    <p class="card-desc">Selecione um arquivo .zip (backup completo) ou .db (banco SQLite) para restaurar. ⚠️ <strong>Atenção:</strong> todos os dados atuais serão substituídos.</p>
+    <button class="btn btn-orange" onclick="window.location.href='gymcontrol://restaurar'">📂 Selecionar Arquivo</button>
+  </div>`;
+}
+
+function fazerBackup() {
+  AndroidCallback.once('gerarBackup', d => {
+    if (d.ok) flash(`✅ Backup salvo em: ${d.caminho}`,'success');
+    else flash(`❌ ${d.error||'Falha no backup'}`,'danger');
+  });
+  Android.gerarBackup();
+}
+
+function doLogout() {
+  if (confirm('Deseja sair do GymControl?')) {
+    window.location.href = 'gymcontrol://logout';
+  }
+}
+
+// ─── INICIALIZAÇÃO ────────────────────────────────────────────────────────────
+navigate('dashboard');
+</script>
+</body>
+</html>

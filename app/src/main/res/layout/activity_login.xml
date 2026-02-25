@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F7"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:minHeight="600dp">
+
+        <!-- Card central -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxWidth="420dp"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="32dp"
+            android:elevation="8dp">
+
+            <!-- Logo e título -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🏋️"
+                android:textSize="52sp"
+                android:gravity="center"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="GymControl"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="#6C63FF"
+                android:gravity="center"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sistema de Controle de Academia"
+                android:textSize="13sp"
+                android:textColor="#6B7280"
+                android:gravity="center"
+                android:layout_marginBottom="32dp"/>
+
+            <!-- Campo usuário -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Usuário"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+
+            <EditText
+                android:id="@+id/etUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="admin"
+                android:inputType="text"
+                android:padding="14dp"
+                android:background="@drawable/input_background"
+                android:layout_marginBottom="16dp"
+                android:textSize="15sp"/>
+
+            <!-- Campo senha -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Senha"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="••••••••"
+                android:inputType="textPassword"
+                android:padding="14dp"
+                android:background="@drawable/input_background"
+                android:layout_marginBottom="24dp"
+                android:textSize="15sp"/>
+
+            <!-- Botão login -->
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Entrar"
+                android:padding="14dp"
+                android:textSize="15sp"
+                android:backgroundTint="#6C63FF"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Padrão: admin / admin123"
+                android:textSize="12sp"
+                android:textColor="#9CA3AF"
+                android:gravity="center"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
